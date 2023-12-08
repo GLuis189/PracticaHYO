@@ -1,9 +1,11 @@
 import sys
 import csv
 from constraint import *
+import random
+import datetime
 
 lectura_parking  = sys.argv[1]
-
+antes = datetime.datetime.now()
 def leer_archivo():
     # Leer el archivo de entrada
     parking = [] 
@@ -32,6 +34,7 @@ def leer_archivo():
     # Es una lista con tuplas de la siguiente manera (ID, TSU/TNU, C/X) ID como entero?
     ambulancias = [(int(partes[0]), partes[1], partes[2]) for partes in (elemento.split('-') for elemento in parking[2:])]
     ambulancias_tsu = [ambulancia for ambulancia in ambulancias if ambulancia[1] == 'TSU']
+
     ambulancias = [f"{ambulancia[0]}-{ambulancia[1]}-{ambulancia[2]}" for ambulancia in ambulancias]
     ambulancias_tsu = [f"{ambulancia[0]}-{ambulancia[1]}-{ambulancia[2]}" for ambulancia in ambulancias_tsu]
     return dimension, cargas, ambulancias, ambulancias_tsu
@@ -39,28 +42,34 @@ def leer_archivo():
 
 def guardar_soluciones(soluciones, dimension, ambulancias):
     # Abrir el archivo CSV en modo escritura
-    with open( lectura_parking + '_sol.csv', 'w', newline='') as archivo:
+    with open( lectura_parking + '_sol2.csv', 'w', newline='') as archivo:
         escritor = csv.writer(archivo, quotechar='"', quoting=csv.QUOTE_ALL, delimiter=',')
 
         # Escribir el número de soluciones
         escritor.writerow(['N. Sol:', len(soluciones)])
 
         # Para cada solución
+        sol1 = random.randint(0, len(soluciones)-1)
+        sol2 = random.randint(0, len(soluciones)-1)
+        sol3 = random.randint(0, len(soluciones)-1)
+        contador = 0
         for solucion in soluciones:
-            # Crear una matriz para representar el parking
-            parking = [['-']*dimension[1] for _ in range(dimension[0])]
+            if contador == sol1 or contador == sol2 or contador == sol3:
+                # Crear una matriz para representar el parking
+                parking = [['-']*dimension[1] for _ in range(dimension[0])]
 
-            # Para cada ambulancia en la solución
-            for ambulancia in ambulancias:
-                # Obtener la plaza asignada a la ambulancia
-                plaza = solucion[ambulancia[0]]
+                # Para cada ambulancia en la solución
+                for ambulancia in ambulancias:
+                    # Obtener la plaza asignada a la ambulancia
+                    plaza = solucion[ambulancia]
 
-                # Colocar la ambulancia en la plaza correspondiente en la matriz
-                parking[plaza[0]-1][plaza[1]-1] = ambulancia
+                    # Colocar la ambulancia en la plaza correspondiente en la matriz
+                    parking[plaza[0]-1][plaza[1]-1] = ambulancia
 
-            # Escribir la matriz en el archivo CSV
-            for fila in parking:
-                escritor.writerow(fila)
+                # Escribir la matriz en el archivo CSV
+                for fila in parking:
+                    escritor.writerow(fila)
+            contador += 1
             #escritor.writerow([])
 
 dimension, cargas, ambulancias, ambulancias_tsu= leer_archivo()
@@ -105,9 +114,9 @@ def restriccion_tsu_filas(a1, a2):
 
 # Agregar la restricción personalizada al problema
 for a1 in ambulancias:
-    if a1.split('-')[1] == 'TSU':
+    if a1 in ambulancias_tsu:
         for a2 in ambulancias:
-            if a1 != a2 and a2.split('-')[1]!='TSU':
+            if a1 != a2 and a2 not in ambulancias_tsu:
                 problem.addConstraint(restriccion_tsu_filas, (a1, a2))
 
 """def restriccion_tsu(*plazas):
@@ -132,25 +141,28 @@ problem.addConstraint(restriccion_tsu, [ambulancia[0] for ambulancia in ambulanc
                 return False
     return True
 problem.addConstraint(restriccion_maniobrabilidad, [ambulancia[0] for ambulancia in ambulancias])"""
-def constraint_maniobrabilidad(a1, a2):
+def constraint_maniobrabilidad(a1, a2, a3):
     #Función que comprueba que todo vehículo debe tener libre una plaza a izquierda o derecha.
-    if a1[1] == a2[1]:
-        if (a1[0] == "1"  and a2[0] == str(int(a1[0]) + 1)):
+    if a1[1] == a2[1] == a3[1]:
+
+        if (a1[0] == 1  and (a2[0] == a1[0] + 1 or a3[0] == a1[0] + 1)):
             return False
-        elif (a1[0] == str(dimension[0]) and a2[0] == str(int(a1[0]) - 1)):
+        
+        elif (a1[0] == dimension[0] and (a2[0] == a1[0] - 1 or a3[0] == a1[0]-1)):
             return False
-        elif (a2[0] == "1"  and a1[0] == str(int(a2[0]) + 1)):
+        
+        elif (a1[0] == a2[0] + 1 and a1[0]== a3[0]- 1):
             return False
-        elif (a2[0] == str(dimension[0]) and a1[0] == str(int(a2[0]) - 1)):
-            return False
-        elif a2[0] == str(int(a1[0]) + 1) or a2[0] == str(int(a1[0]) - 1):
+        
+        elif (a1[0] == a2[0]- 1 and a1[0]== a3[0] + 1):
             return False
     return True
  # Por cuestiones de maniobrabilidad dentro del parking todo vehículo debe tener libre una plaza a izquierda o derecha (mirando en dirección a la salida).
 for a1 in ambulancias:
     for a2 in ambulancias:
-        if a1 != a2:
-            problem.addConstraint(constraint_maniobrabilidad, (a1, a2))
+        for a3 in ambulancias:
+            if a1 != a2 != a3:
+                problem.addConstraint(constraint_maniobrabilidad, (a1, a2, a3))
 
 soluciones = problem.getSolutions()
 num_soluciones = len(soluciones)
@@ -159,5 +171,8 @@ if num_soluciones == 0:
     exit()
 
 # Llamar a la función guardar_soluciones con las soluciones obtenidas
-print(soluciones)
-#guardar_soluciones(soluciones, dimension, ambulancias)
+
+guardar_soluciones(soluciones, dimension, ambulancias)
+despues = datetime.datetime.now()
+tiempo = despues -antes
+print(tiempo)
