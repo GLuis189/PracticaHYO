@@ -42,7 +42,7 @@ def leer_archivo():
 
 def guardar_soluciones(soluciones, dimension, ambulancias):
     # Abrir el archivo CSV en modo escritura
-    with open( lectura_parking + '_sol2.csv', 'w', newline='') as archivo:
+    with open( lectura_parking + '_sol.csv', 'w', newline='', encoding='windows-1252') as archivo:
         escritor = csv.writer(archivo, quotechar='"', quoting=csv.QUOTE_ALL, delimiter=',')
 
         # Escribir el número de soluciones
@@ -55,6 +55,7 @@ def guardar_soluciones(soluciones, dimension, ambulancias):
         contador = 0
         for solucion in soluciones:
             if contador == sol1 or contador == sol2 or contador == sol3:
+                escritor.writerow([])
                 # Crear una matriz para representar el parking
                 parking = [['-']*dimension[1] for _ in range(dimension[0])]
 
@@ -69,8 +70,9 @@ def guardar_soluciones(soluciones, dimension, ambulancias):
                 # Escribir la matriz en el archivo CSV
                 for fila in parking:
                     escritor.writerow(fila)
+        
             contador += 1
-            #escritor.writerow([])
+            
 
 dimension, cargas, ambulancias, ambulancias_tsu= leer_archivo()
 problem = Problem()
