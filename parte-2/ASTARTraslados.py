@@ -6,6 +6,7 @@ import copy
 
 lectura_mapa = sys.argv[1]
 num_h = sys.argv[2]
+salida = lectura_mapa[:-3] + "output"
 
 # lectura_mapa = "parte-2/ASTAR-tests/mapa1.csv"
 
@@ -47,10 +48,15 @@ def ordenar_abrierta(nodos, costes):
 def crear_tupla(lista):
     return tuple(tuple(i) if isinstance(i, list) else i for i in lista)
 
-def guardar_solucion(camino, mapa, coste, fin):
+def imprimir_solucion(camino, mapa, coste, fin):
     # coste = coste[fin]
     for nodo in camino:
         print("({},{}):{}:{}".format(nodo[0][0], nodo[0][1], mapa[nodo[0][0]][nodo[0][1]], nodo[1]))
+
+def guardar_solucion(camino, mapa, coste, fin):
+    with open(salida, "w", newline='') as f:
+        for nodo in camino:
+            f.write("({},{}):{}:{}\n".format(nodo[0][0], nodo[0][1], mapa[nodo[0][0]][nodo[0][1]], nodo[1]))
 
 
 def arriba(estado):
@@ -315,4 +321,5 @@ mapa, filas, columnas = leer_archivo()
 inicio = inicial()
 fin = final()
 camino, coste = a_estrella(inicio, fin)
+imprimir_solucion(camino, mapa, coste, fin)
 guardar_solucion(camino, mapa, coste, fin)

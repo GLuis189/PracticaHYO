@@ -1,4 +1,2 @@
-a = [1,2,3,4,5]
-s = {1: 0, 2: 2, 3: 1, 4: 0, 5: 0}
-d = {tuple(a): 0}
-print(d)
+s = "./ASTAR-tests/mapa1.csv"
+print(s[:-3])
