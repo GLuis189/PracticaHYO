@@ -27,9 +27,11 @@ def obtener_destinos():
         for j in range(len(mapa[i])):
             if mapa[i][j] == "CC":
                 cc = (i,j)
-            if mapa[i][j] == "CC":
+            if mapa[i][j] == "CN":
                 cn = (i,j)
-    return cc, cn
+            if mapa[i][j] == "P":
+                p = (i,j)    
+    return cc, cn, p
 
 def inicial():
     estado = [None, 50, [],[]]
@@ -245,25 +247,40 @@ def izquierda(estado):
             nuevo_estado[2].remove("C")
         return nuevo_estado, 1
     
-def heuristica_manhattan(estado):
-    punto1 = estado[0]
-    print(estado)
-    distancia_min = 99999
-    if len(estado[2]) < 10 and estado[3] != []:
-        # Recoger al pasajero mas cercano
-        for punto in estado[3]:
-            punto2 = (punto[0],punto[1])
-            distancia = abs(punto1[0] - punto2[0]) + abs(punto1[1] - punto2[1])
-            if distancia < distancia_min:
-                distancia_min = distancia
-        return distancia_min
-    if estado[2][-1] == "C":
-        pass
 
-    
+def heuristica(estado):
+    if num_h == "1":
+        # Distancia manhattan
+        punto1 = estado[0]
+        distancia_min = 99999
+        if len(estado[2]) < 10 and estado[3] != []:
+            # Recoger al pasajero mas cercano
+            for punto in estado[3]:
+                punto2 = (punto[0],punto[1])
+                distancia = abs(punto1[0] - punto2[0]) + abs(punto1[1] - punto2[1])
+                if distancia < distancia_min:
+                    distancia_min = distancia
+            return distancia_min
+        if estado[2] == [] and estado[3] == []:
+            punto2 = p
+            return abs(punto1[0] - punto2[0]) + abs(punto1[1] - punto2[1])
+        if estado[2][-1] == "C":
+            punto2 = cc
+            return abs(punto1[0] - punto2[0]) + abs(punto1[1] - punto2[1])
+        if estado[2][-1] == "N":
+            punto2 = cn
+            return abs(punto1[0] - punto2[0]) + abs(punto1[1] - punto2[1])
+        return 0
+    if num_h == "2":
+        # Heurística
+        return
+    if num_h == "3":
+        # Heuristica no informada
+        return 0
+    return
 def a_estrella(inicio, fin):
     abierta = [inicio]
-    h_inicio = heuristica_manhattan(inicio)
+    h_inicio = heuristica(inicio)
     cerrada = []
     exito = False
     camino = {}
@@ -281,40 +298,44 @@ def a_estrella(inicio, fin):
             s_izquierda, c_izquierda = izquierda(n)
 
             if s_arriba != 0 and s_arriba not in cerrada:
+                h_arriba = heuristica(s_arriba)
                 if s_arriba not in abierta:
                     abierta.append(s_arriba)
-                    coste[crear_tupla(s_arriba)] = coste[t_n] + c_arriba
+                    coste[crear_tupla(s_arriba)] = coste[t_n] + c_arriba + h_arriba
                     camino[crear_tupla(s_arriba)] = n
                 else:
-                    if coste[crear_tupla(s_arriba)] > coste[t_n] + c_arriba:
-                        coste[crear_tupla(s_arriba)] = coste[t_n] + c_arriba
+                    if coste[crear_tupla(s_arriba)] > coste[t_n] + c_arriba + h_arriba:
+                        coste[crear_tupla(s_arriba)] = coste[t_n] + c_arriba + h_arriba
                         camino[crear_tupla(s_arriba)] = n
             if s_abajo != 0 and s_abajo not in cerrada:
+                h_abajo = heuristica(s_abajo)
                 if s_abajo not in abierta:
                     abierta.append(s_abajo)
-                    coste[crear_tupla(s_abajo)] = coste[t_n] + c_abajo
+                    coste[crear_tupla(s_abajo)] = coste[t_n] + c_abajo + h_abajo
                     camino[crear_tupla(s_abajo)] = n
                 else:
-                    if coste[crear_tupla(s_abajo)] > coste[t_n] + c_abajo:
-                        coste[crear_tupla(s_abajo)] = coste[t_n] + c_abajo
+                    if coste[crear_tupla(s_abajo)] > coste[t_n] + c_abajo + h_abajo:
+                        coste[crear_tupla(s_abajo)] = coste[t_n] + c_abajo + h_abajo
                         camino[crear_tupla(s_abajo)] = n
             if s_derecha != 0 and s_derecha not in cerrada:
+                h_derecha = heuristica(s_derecha)
                 if s_derecha not in abierta:
                     abierta.append(s_derecha)
-                    coste[crear_tupla(s_derecha)] = coste[t_n] + c_derecha
+                    coste[crear_tupla(s_derecha)] = coste[t_n] + c_derecha + h_derecha
                     camino[crear_tupla(s_derecha)] = n
                 else:
-                    if coste[crear_tupla(s_derecha)] > coste[t_n] + c_derecha:
-                        coste[crear_tupla(s_derecha)] = coste[t_n] + c_derecha
+                    if coste[crear_tupla(s_derecha)] > coste[t_n] + c_derecha + h_derecha:
+                        coste[crear_tupla(s_derecha)] = coste[t_n] + c_derecha + h_derecha
                         camino[crear_tupla(s_derecha)] = n
             if s_izquierda != 0 and s_izquierda not in cerrada:
+                h_izquierda = heuristica(s_izquierda)
                 if s_izquierda not in abierta:
                     abierta.append(s_izquierda)
-                    coste[crear_tupla(s_izquierda)] = coste[t_n] + c_izquierda
+                    coste[crear_tupla(s_izquierda)] = coste[t_n] + c_izquierda + h_izquierda
                     camino[crear_tupla(s_izquierda)] = n
                 else:
-                    if coste[crear_tupla(s_izquierda)] > coste[t_n] + c_izquierda:
-                        coste[crear_tupla(s_izquierda)] = coste[t_n] + c_izquierda
+                    if coste[crear_tupla(s_izquierda)] > coste[t_n] + c_izquierda + h_izquierda:
+                        coste[crear_tupla(s_izquierda)] = coste[t_n] + c_izquierda + h_izquierda
                         camino[crear_tupla(s_izquierda)] = n
             abierta = ordenar_abrierta(abierta, coste)
     if exito:
@@ -329,7 +350,17 @@ def a_estrella(inicio, fin):
         return camino_final, coste
     return
 
+
+antes = datetime.datetime.now()
 mapa, filas, columnas = leer_archivo()
+cc, cn, p = obtener_destinos()
+inicio = inicial()
+fin = final()
+camino, coste = a_estrella(inicio, fin)
+#imprimir_solucion(camino, mapa, coste, fin)
+guardar_solucion(camino, mapa, coste, fin)
+despues = datetime.datetime.now()
+print("Tiempo: ", despues -antes)
 
 # inicio = inicial()
 # print("Inicio {}".format(inicio))
@@ -344,15 +375,3 @@ mapa, filas, columnas = leer_archivo()
 # derecha_abajo, coste_derecha_abajo = abajo(derecha_estado)
 # print("Derecha {} coste {}".format(derecha_abajo, coste_derecha_abajo + coste_derecha))
 # print("Derecha {} coste {}".format(derecha_estado, coste_derecha))
-
-antes = datetime.datetime.now()
-inicio = inicial()
-fin = final()
-cc, cn = obtener_destinos()
-''' print(cc) '''
-camino, coste = a_estrella(inicio, fin)
-#imprimir_solucion(camino, mapa, coste, fin)
-guardar_solucion(camino, mapa, coste, fin)
-despues = datetime.datetime.now()
-print("Tiempo: ", despues -antes)
-#print(heuristica_manhattan(inicio))
