@@ -21,6 +21,15 @@ def leer_archivo():
             mapa.append(fila)
     return mapa, len(mapa), len(mapa[0])
 
+def obtener_destinos():
+    for i in range(len(mapa)):
+        for j in range(len(mapa[i])):
+            if mapa[i][j] == "CC":
+                cc = (i,j)
+            if mapa[i][j] == "CC":
+                cn = (i,j)
+    return cc, cn
+
 def inicial():
     estado = [None, 50, [],[]]
     for i in range(len(mapa)):
@@ -235,6 +244,22 @@ def izquierda(estado):
             nuevo_estado[2].remove("C")
         return nuevo_estado, 1
     
+def heuristica_manhattan(estado):
+    punto1 = estado[0]
+    print(estado)
+    distancia_min = 99999
+    if len(estado[2]) < 10 or estado[3] != []:
+        # Recoger al pasajero mas cercano
+        for punto in estado[3]:
+            punto2 = (punto[0],punto[1])
+            distancia = abs(punto1[0] - punto2[0]) + abs(punto1[1] - punto2[1])
+            if distancia < distancia_min:
+                distancia_min = distancia
+        return distancia_min
+    if estado[2][-1] == "C":
+        pass
+
+    
 def a_estrella(inicio, fin):
     abierta = [inicio]
     cerrada = []
@@ -320,6 +345,9 @@ mapa, filas, columnas = leer_archivo()
 
 inicio = inicial()
 fin = final()
-camino, coste = a_estrella(inicio, fin)
-imprimir_solucion(camino, mapa, coste, fin)
-guardar_solucion(camino, mapa, coste, fin)
+cc, cn = obtener_destinos()
+print(cc)
+# camino, coste = a_estrella(inicio, fin)
+# imprimir_solucion(camino, mapa, coste, fin)
+# guardar_solucion(camino, mapa, coste, fin)
+print(heuristica_manhattan(inicio))
