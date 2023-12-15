@@ -1,5 +1,6 @@
 import sys
 import copy
+import datetime
 
 # Estados [posicion ambulancia, energía, pasajeros, por recoger]
 # Estados [(x,y), E, [C,C,C], [(x,y,N), (x,y,C)]]
@@ -248,7 +249,7 @@ def heuristica_manhattan(estado):
     punto1 = estado[0]
     print(estado)
     distancia_min = 99999
-    if len(estado[2]) < 10 or estado[3] != []:
+    if len(estado[2]) < 10 and estado[3] != []:
         # Recoger al pasajero mas cercano
         for punto in estado[3]:
             punto2 = (punto[0],punto[1])
@@ -262,10 +263,11 @@ def heuristica_manhattan(estado):
     
 def a_estrella(inicio, fin):
     abierta = [inicio]
+    h_inicio = heuristica_manhattan(inicio)
     cerrada = []
     exito = False
     camino = {}
-    coste = {crear_tupla(inicio): 0} 
+    coste = {crear_tupla(inicio): h_inicio} 
     while abierta != [] and not exito:
         n = abierta.pop(0)
         cerrada.append(n)
@@ -343,11 +345,14 @@ mapa, filas, columnas = leer_archivo()
 # print("Derecha {} coste {}".format(derecha_abajo, coste_derecha_abajo + coste_derecha))
 # print("Derecha {} coste {}".format(derecha_estado, coste_derecha))
 
+antes = datetime.datetime.now()
 inicio = inicial()
 fin = final()
 cc, cn = obtener_destinos()
-print(cc)
-# camino, coste = a_estrella(inicio, fin)
-# imprimir_solucion(camino, mapa, coste, fin)
-# guardar_solucion(camino, mapa, coste, fin)
-print(heuristica_manhattan(inicio))
+''' print(cc) '''
+camino, coste = a_estrella(inicio, fin)
+#imprimir_solucion(camino, mapa, coste, fin)
+guardar_solucion(camino, mapa, coste, fin)
+despues = datetime.datetime.now()
+print("Tiempo: ", despues -antes)
+#print(heuristica_manhattan(inicio))
